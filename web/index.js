@@ -39,6 +39,41 @@ app.use("/api/*", shopify.validateAuthenticatedSession());
 
 app.use(express.json());
 
+// Read Shop Information
+app.get("/api/store/info", async (_req, res) => {
+  const storeData = await shopify.api.rest.Shop.all({
+    session: res.locals.shopify.session,
+  });
+  res.status(200).send(storeData);
+});
+
+// read collection data count
+app.get("/api/collections/count", async (_req, res) => {
+  const client = new shopify.api.clients.Graphql({
+    session: res.locals.shopify.session,
+  });
+
+  const countData = await client.request(`
+    query shopifyCollectionCount {
+      collectionsCount {
+        count
+      }
+    }
+  `);
+
+  res.status(200).send({ count: countData.data.collectionsCount.count });
+});
+
+// read orders data count
+app.get("/api/orders/all", async (_req, res) => {
+  const ordersData = await shopify.api.rest.Order.all({
+    session: res.locals.shopify.session,
+    status: "any",
+  });
+  res.status(200).send(ordersData);
+});
+
+
 app.get("/api/products/count", async (_req, res) => {
   const client = new shopify.api.clients.Graphql({
     session: res.locals.shopify.session,
