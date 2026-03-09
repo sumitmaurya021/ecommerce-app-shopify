@@ -7,7 +7,7 @@ export default function HomePage() {
   const { t } = useTranslation();
   return (
     <Page narrowWidth>
-
+      This is home page
     </Page>
   );
 }
