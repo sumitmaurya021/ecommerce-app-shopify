@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { NavMenu } from "@shopify/app-bridge-react";
 import Routes from "./Routes";
 
-import { QueryProvider, PolarisProvider } from "./components";
+import { QueryProvider, PolarisProvider, NavigationBar } from "./components";
 
 export default function App() {
   // Any .tsx or .jsx files in /pages will become a route
@@ -17,11 +17,15 @@ export default function App() {
     <PolarisProvider>
       <BrowserRouter>
         <QueryProvider>
-          <NavMenu>
-            <a href="/" rel="home" />
-            <a href="/pagename">{t("NavigationMenu.pageName")}</a>
-          </NavMenu>
-          <Routes pages={pages} />
+          <NavMenu></NavMenu>
+          <div className="main-section">
+            <div className="menu-section">
+              <NavigationBar />
+            </div>
+            <div className="content-section">
+              <Routes pages={pages} />
+            </div>
+          </div>
         </QueryProvider>
       </BrowserRouter>
     </PolarisProvider>
