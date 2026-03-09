@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { NavMenu } from "@shopify/app-bridge-react";
 import Routes from "./Routes";
 
-import { QueryProvider, PolarisProvider, NavigationBar } from "./components";
+import { QueryProvider, PolarisProvider, NavigationBar, TopBar } from "./components";
 
 export default function App() {
   // Any .tsx or .jsx files in /pages will become a route
@@ -23,6 +23,7 @@ export default function App() {
               <NavigationBar />
             </div>
             <div className="content-section">
+              <TopBar />
               <Routes pages={pages} />
             </div>
           </div>

@@ -1,9 +1,16 @@
 import React from 'react'
+import { NavLink } from 'react-router-dom'
+import logo from '../assets/Images/logo.jpg'
 
 export function TopBar() {
   return (
-    <div>
-      This is the top bar
+    <div className='topbar-section'>
+        <div className="logo-block">
+            <img className='logo' src={logo} alt="logo image" />
+            <h1 className='text-bold h4'>Shop Dashboard</h1>
+            <NavLink to="/"> Sales </NavLink>
+            <NavLink to="/products"> Products </NavLink>
+        </div>
     </div>
   )
 }

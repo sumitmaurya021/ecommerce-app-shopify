@@ -1,13 +1,34 @@
 import {
+  Layout,
+  LegacyCard,
   Page
 } from "@shopify/polaris";
 import { useTranslation, Trans } from "react-i18next";
+import { Card, OrderDetails, OrderGraphs } from "../components";
+
 
 export default function HomePage() {
   const { t } = useTranslation();
   return (
-    <Page narrowWidth>
-      This is home page
+    <Page fullWidth>
+      <div className="home-section">
+        <div className="graphs-section">
+          <OrderGraphs />
+        </div>
+        <div className="cards-section">
+          <Layout>
+            <Card title="Order" />
+            <Card title="Order" />
+            <Card title="Order" />
+            <Card title="Order" />
+            <Card title="Order" />
+            <Card title="Order" />
+          </Layout>
+        </div>
+        <div className="order-details-section">
+          <OrderDetails />
+        </div>
+      </div>
     </Page>
   );
 }
