@@ -7,6 +7,30 @@ import serveStatic from "serve-static";
 import shopify from "./shopify.js";
 import productCreator from "./product-creator.js";
 import PrivacyWebhookHandlers from "./privacy.js";
+import mongoose from "mongoose";
+
+// Connect to MongoDB
+// Create Schema
+// Create Model
+// Crud Operations
+
+mongoose.connect("mongodb://localhost:27017/shopdashboard")
+.then(() => console.log("Connected to Mongoose Successfully"))
+.catch((err) => console.error("Error connecting to MongoDB:", err));
+
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+  },
+  usermail: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+});
+
+const User = mongoose.model("userdata", userSchema);
 
 const PORT = parseInt(
   process.env.BACKEND_PORT || process.env.PORT || "3000",
@@ -36,8 +60,57 @@ app.post(
 // also add a proxy rule for them in web/frontend/vite.config.js
 
 app.use("/api/*", shopify.validateAuthenticatedSession());
+app.use("/userdata/*", authenticateUser);
+
+async function authenticateUser(req, res, next) {
+  try {
+    const shop = req.query.shop;
+    if (!shop) {
+      return res.status(400).send("Shop parameter missing");
+    }
+    const sessions = await shopify.config.sessionStorage.findSessionsByShop(shop);
+    console.log("Sessions:", sessions);
+    if (sessions.length && sessions[0].shop === shop) {
+      next();
+    } else {
+      res.status(403).send("User not authorized to access this data");
+    }
+  } catch (error) {
+    console.error("Auth error:", error);
+    res.status(500).send("Internal server error");
+  }
+}
 
 app.use(express.json());
+
+app.get("/api/getusers", async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.status(200).json(users);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Server Error");
+  }
+});
+
+// GETTING STOREFRONT DATA
+app.post("/userdata/userinfo", async (req, res) => {
+  let userData = req.body;
+  try {
+    let createUser = await User.create({
+      username: userData[0],
+      usermail: userData[1],
+    })
+    console.log("User created successfully")
+    res.status(200).json("User createddddd successfully");
+  } catch (error) {
+    if(error.code === 11000) {
+      return res.json("User already Exists")
+    } else {
+      console.log(error.message);
+    }
+  }
+});
 
 // Read Shop Information
 app.get("/api/store/info", async (_req, res) => {
@@ -104,6 +177,72 @@ app.post("/api/products", async (_req, res) => {
   res.status(status).send({ success: status === 200, error });
 });
 
+
+// READ ALL PRODUCTS
+app.get("/api/product/count", async(req, res) => {
+  let totalProducts = await shopify.api.rest.Product.count({
+    session: res.locals.shopify.session,
+  });
+  res.status(200).send(totalProducts);
+});
+
+// READ ALL COLLECTIONS
+app.get("/api/collection/count", async(req, res) => {
+  let totalCollections = await shopify.api.rest.CustomCollection.all({
+    session: res.locals.shopify.session,
+  });
+  res.status(200).send(totalCollections);
+})
+
+// READ ALL PRODUCTS
+app.get("/api/products/all", async(req, res) => {
+  let allProducts = await shopify.api.rest.Product.all({
+    session: res.locals.shopify.session,
+  });
+  res.status(200).send(allProducts);
+});
+
+// UPDATE A PRODUCT
+app.put("/api/product/update", async(req, res) => {
+  let getProduct = req.body;
+  let updateProduct = new shopify.api.rest.Product({
+    session: res.locals.shopify.session,
+  });
+  updateProduct.id = getProduct.id;
+  updateProduct.title = getProduct.title;
+  await updateProduct.save({
+    update: true,
+  });
+  res.status(200).send({Message: "Product Updated Successfully"})
+});
+
+// CREATE A NEW PRODUCT
+app.post("/api/product/create", async(req, res) => {
+  let newProduct = new shopify.api.rest.Product({
+    session: res.locals.shopify.session,
+  });
+  newProduct.title = "Men New Style Shoe";
+  newProduct.body_html = "Men new style show latest design";
+  newProduct.varndor = "al-janat-demo";
+  newProduct.images = [{
+    src: "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+  }];
+  await newProduct.save({
+    update: true,
+  });
+  res.status(200).send({Message: "Product created Successfully"});
+});
+
+// DELETE A PRODUCT
+app.delete("/api/product/delete", async(req, res) => {
+  await shopify.api.rest.Product.delete({
+    session: res.locals.shopify.session,
+    id: 10889583329621,
+  });
+  res.status(200).send({Message: "Product Deleted Successfully"})
+});
+
+
 app.use(shopify.cspHeaders());
 app.use(serveStatic(STATIC_PATH, { index: false }));
 
@@ -119,3 +258,6 @@ app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
 });
 
 app.listen(PORT);
+
+
+

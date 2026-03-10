@@ -18,3 +18,8 @@ scopes = "write_products, read_orders, read_products"
 
 [auth]
 redirect_urls = [ "https://example.com/api/auth" ]
+
+[app_proxy]
+url = "https://rail-administered-richards-custom.trycloudflare.com/userdata/userinfo"
+subpath = "proxy"
+prefix = "apps"
